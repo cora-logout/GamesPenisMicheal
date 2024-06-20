@@ -5,25 +5,6 @@ using System.Linq;
 using FMODUnity;
 using FMOD.Studio;
 
-/*Effects:
-    - Heal (Cura) I. Heals 10 HP
-    - Heal II. Heals 15 HP
-    - Heal III. Heals 20 HP
-
-    - Hide (Esconder). Affected character has a 75% chance to completely avoid attacks that require visual confirmation of target
-
-    - Lock (Tranca) (int). Locks opponent's character for an int amount of turns.
-    
-    - Poison (Veneno) I. Deals 10 damage to character affected or player at the end of next turn, ignores defense.
-    - Poison II. Deals 15 damage ..
-    - Poison III. Deals 10 damage to character affected or player at the end of the next *two* turns, ignores defense.
-
-    - Relax (Relaxar). Remove "Scare"
-
-    - Scare (Assustar) I. Lowers enemy attack by 10 for the next turn
-    - Scare II. Lowers enemy attack by 10 for the next turn and by 5 for the turn after that
-    - Scare III. Lowers enemy attack by 15 for the next turn and by 10 for the turn after that
-*/
 public class CardLibrary : MonoBehaviour
 {
     private static CardLibrary _instance;
@@ -31,9 +12,12 @@ public class CardLibrary : MonoBehaviour
     public Dictionary<string, CardD> cardDefenseDictionary;
     public Dictionary<string, CardM> cardMagicDictionary;
     private ScoreKeeper scoreKeeper;
+    private EffectLibrary effectLibrary;
     private PlayerController playerController;
     private string NotEnoughCoinsSound = "event:/NotEnoughEnergy";
     private FMOD.Studio.EventInstance notEnoughInstance;
+    private string SpendCoinsSound = "event:/SpendCoins";
+    private FMOD.Studio.EventInstance spendCoinsInstance;
 
     public static CardLibrary Instance
     {
@@ -68,55 +52,57 @@ public class CardLibrary : MonoBehaviour
             { "Testonildo", //Name of character
                 new CardP("Testonildo", //Name of card
                 new Dictionary<string, Skill> { //Dictionary for Skills
-                    { "Golpe 1", new Skill(10, 1) }, //Skill name, Damage and Cost
-                    { "Golpe 2", new Skill(20, 2) },
-                    { "Golpe 3", new Skill(30, 3) }
-                }, "Neutral" ) 
+                    { "Golpe 1", new Skill(10, 1, "Default") }, //Skill name, Damage and Cost
+                    { "Golpe 2", new Skill(20, 2, "Default") },
+                    { "Golpe 3", new Skill(30, 3, "Default") }
+                }) 
             },
             { "Bufos Regularis",
                 new CardP("Bufos Regularis",
                 new Dictionary<string, Skill> {
-                    { "Ribbit", new Skill(15, 1) }, 
-                    { "Salto", new Skill(10, 2) },
-                    { "Bufada", new Skill(20, 3) }
-                }, "Neutral" ) 
+                    { "Ribbit", new Skill(15, 1, "Default") }, 
+                    { "Salto", new Skill(10, 2, "Default") },
+                    { "Bufada", new Skill(20, 3, "Default") }
+                }) 
             },
             { "Billy Feijão do Mal", 
                 new CardP("Billy Feijão do Mal",
                 new Dictionary<string, Skill> {
-                    { "Mordida", new Skill(10, 2) },
-                    { "Golpe Terroso", new Skill(5, 1) },
-                    { "Feijoada", new Skill(30, 4) }
-                }, "Neutral" )
+                    { "Mordida", new Skill(10, 2, "Default") },
+                    { "Golpe Terroso", new Skill(5, 1, "Default") },
+                    { "Feijoada", new Skill(30, 4, "Default") }
+                })
             },
             { "Cachilda", 
                 new CardP("Cachilda",
                 new Dictionary<string, Skill> {
-                    { "Mordida", new Skill(10, 2) },
-                    { "Latir", new Skill(0, 1) /*ScareI*/},
-                    { "Camuflar", new Skill(0, 3) /*Hide*/}
-                }, "Neutral" )
+                    { "Mordida", new Skill(10, 2, "Default") },
+                    { "Latir", new Skill(0, 1, "ScareI") },
+                    { "Camuflar", new Skill(0, 3, "Hide") }
+                })
             },
             { "Doutor Afanasfávio",
                 new CardP("Doutor Afanasfávio",
                 new Dictionary<string, Skill> {
-                    { "Pílulas Mágicas", new Skill(0, 2) /*HealI*/},
-                    { "Análise", new Skill(15, 2) },
-                    { "Pranchetada", new Skill(20, 2) }
-                }, "Neutral" )
+                    { "Pílulas Mágicas", new Skill(0, 2, "HealI") },
+                    { "Análise", new Skill(15, 2, "Dude") },
+                    { "Pranchetada", new Skill(20, 2, "Default") }
+                })
             },
             { "Fantasma", 
                 new CardP("Fantasma", 
                 new Dictionary<string, Skill> { 
-                    { "Golpe Ectoplásmico", new Skill(10, 1) }, 
-                    { "Grito do Abismo", new Skill(5, 1) },
-                    { "Desaparecer", new Skill(0, 2) } 
-                }, "Ghost" ) 
+                    { "Golpe Ectoplásmico", new Skill(10, 1, "Default") }, 
+                    { "Grito do Abismo", new Skill(5, 1, "Default") },
+                    { "Desaparecer", new Skill(0, 2, "Default") } 
+                }) 
             }
         };
         cardDefenseDictionary = new Dictionary<string, CardD>
         {
-            { "Caixa de Som", new CardD("Caixa de Som", 10) }
+            { "Caixa de Som", new CardD("Caixa de Som", 10) },
+            { "Casaco de Frio", new CardD("Casaco de Frio", 15) },
+            { "Pistola Globeriana V30", new CardD("Pistola Globeriana V30", 10) }
         };
         cardMagicDictionary = new Dictionary<string, CardM>
         {
@@ -126,8 +112,10 @@ public class CardLibrary : MonoBehaviour
     void Start()
     {
         scoreKeeper = FindObjectOfType<ScoreKeeper>();
+        effectLibrary = FindObjectOfType<EffectLibrary>();
         playerController = FindObjectOfType<PlayerController>();
         notEnoughInstance = RuntimeManager.CreateInstance(NotEnoughCoinsSound);
+        spendCoinsInstance = RuntimeManager.CreateInstance(SpendCoinsSound);
     }
     public void CardPSkill(string cardName, int skillN)
     {
@@ -141,19 +129,26 @@ public class CardLibrary : MonoBehaviour
                 Skill skill = skillEntry.Value;
                 int damage = skill.Damage;
                 int cost = skill.Cost;
+                string type = skill.Type;
 
                 if (scoreKeeper.playerACoins >= cost)
                 {
+                    spendCoinsInstance.start();
                     playerController.RemoveCoins(cost);
                     scoreKeeper.playerACoins -= cost;
                     SoundEffects soundEffects = FindObjectOfType<SoundEffects>();
                     soundEffects.PlayCardSound(cardName + "Attack");
-                    Debug.Log("Used skill: " + skillName + ". With damage: " + damage + ". And cost: " + cost);
+                    Debug.Log("Used skill: " + skillName + ". With damage: " + damage + ". And cost: " + cost + ". And type: " + type);
                     scoreKeeper.DoDamage(damage);
+                    if(type != "Default")
+                    {
+                        effectLibrary.ApplyEffect(type);
+                    }
                 }
                 else
                 {
                     notEnoughInstance.start();
+                    playerController.StartCoroutine(playerController.NotEnoughCoinsAnim());
                     Debug.Log("Not enough coins to use skill: " + skillName + ". Because it costs: " + cost + ". And playerA has: " + scoreKeeper.playerACoins + " coins.");
                 }
             }
@@ -173,13 +168,11 @@ public class CardP
 {
     public string Name { get; set; }
     public Dictionary<string, Skill> Skills;
-    public string Type { get; set; }
 
-    public CardP(string name, Dictionary<string, Skill> skills, string type)
+    public CardP(string name, Dictionary<string, Skill> skills)
     {
         Name = name;
         Skills = skills;
-        Type = type;
     }
 }
 
@@ -187,11 +180,13 @@ public class Skill
 {
     public int Damage { get; set; }
     public int Cost { get; set; }
+    public string Type { get; set; }
 
-    public Skill(int damage, int cost)
+    public Skill(int damage, int cost, string type)
     {
         Damage = damage;
         Cost = cost;
+        Type = type;
     }
 }
 

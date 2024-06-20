@@ -10,20 +10,25 @@ public class SoundEffects : MonoBehaviour
     {
         cardSoundMap = new Dictionary<string, string>
         {
-            //Activate
+        //Activate DEF
+            { "CaixaDeSomActivate", "event:/Defenses/Activate/CaixaDeSom" },
+            { "CasacoDeFrioActivate", "event:/Defenses/Activate/CasacoDeFrio"},
+        //Activate MAG
+            { "CupcakeActivate", "event:/Magic/Cupcake" },
+            { "TorreDoMagoActivate", "event:/Magic/TorreDoMago" },
+            { "PoteDePiclesActivate", "event:/Magic/PoteDePicless" },
+        //Activate CHAR
             { "Billy Feijão Do MalActivate", "event:/Characters/Activate/Billy"},
-            { "Bufos RegularisActivate", "event:/Characters/Activate/ActivateFrog" },
-            { "CaixaDeSomActivate", "event:/Characters/Activate/ActivateCaixaDeSom" },
-            { "FantasmaActivate", "event:/Characters/Activate/ActivateFantasma"},
-            { "MeloActivate", "event:/Characters/Activate/ActivateMelo" },
-            { "TorreDoMagoActivate", "event:/Characters/Activate/ActivateTorreDoMago" },
-            { "PoteDePiclesActivate", "event:/Characters/Activate/ActivatePoteDePicles" },
-            { "CupcakeActivate", "event:/Characters/Activate/ActivateCupcake" },
-            //Attack
+            { "Bufos RegularisActivate", "event:/Characters/Activate/BufosRegularis" },
+            { "Doutor AfanasfávioActivate", "event:/Characters/Activate/DoutorAfanasfávio"},
+            { "FantasmaActivate", "event:/Characters/Activate/Fantasma"},
+            { "MeloActivate", "event:/Characters/Activate/Melo" },
+        //Attack CHAR
             { "Billy Feijão do MalAttack", "event:/Characters/Attack/Billy"},
-            { "Bufos RegularisAttack", "event:/Characters/Attack/AttackFrog" },
-            { "GatoAttack", "event:/Characters/Attack/AttackCat" }
-            //Death
+            { "Bufos RegularisAttack", "event:/Characters/Attack/BufosRegularis" },
+            { "Doutor AfanasfávioAttack", "event:/Characters/Attack/DoutorAfanasfávio"}
+        //Death CHAR
+        //Death DEF
         };
     }
 

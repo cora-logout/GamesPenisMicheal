@@ -82,10 +82,10 @@ public class CardPersonagem : MonoBehaviour
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out hit) && hit.collider.gameObject.layer == LayerMask.NameToLayer("SkillButton"))
             {
-                SkillButton skillButton = hit.collider.GetComponentInChildren<SkillButton>();
-                if (skillButton != null)
+                SkillButton skillButton = hit.collider.GetComponent<SkillButton>();
+                if (skillButton != null && cardName == skillButton.cardName)
                 {
                     cardLibrary.CardPSkill(skillButton.cardName, skillButton.skillNumber - 1);
                 }

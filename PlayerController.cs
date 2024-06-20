@@ -41,8 +41,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform coinSpawnPoint;
     [SerializeField] private Animator cameraAnimator;
     [SerializeField] private Image inspectOverlay;
+    [SerializeField] private Color inspectColor;
+    [SerializeField] private Color pauseColor;
     [SerializeField] private Color transparent;
-    [SerializeField] private Color opaque;
+    [SerializeField] private Color red;
+    [SerializeField] private Color white;
     [SerializeField] private GameObject pauseObject;
     [SerializeField] private Image pauseOverlay;
     [SerializeField] private GameObject walletObject;
@@ -68,16 +71,22 @@ public class PlayerController : MonoBehaviour
     private FMOD.Studio.EventInstance selectInstance;
     private string CancelSound = "event:/Cancel";
     private FMOD.Studio.EventInstance cancelInstance;
-    private string Music = "event:/Music/PlaceHolder";
-    private FMOD.Studio.EventInstance musicInstance;
     private string SeeHandsSound = "event:/SeeHands";
     private FMOD.Studio.EventInstance seeHandsInstance;
     private string CloseHandsSound = "event:/CloseHands";
     private FMOD.Studio.EventInstance closeHandsInstance;
+    private string SeeGameSound = "event:/SeeGame";
+    private FMOD.Studio.EventInstance seeGameInstance;
+    private string CloseGameSound = "event:/CloseGame";
+    private FMOD.Studio.EventInstance closeGameInstance;
     private string FilledSlotSound = "event:/FilledSlot";
     private FMOD.Studio.EventInstance filledSlotInstance;
     private string BuyCardSound = "event:/BuyCard";
     private FMOD.Studio.EventInstance buyCardInstance;
+    private string PauseSound = "event:/Pause";
+    private FMOD.Studio.EventInstance pauseInstance;
+    private string GetCoinsSound = "event:/GetCoins";
+    private FMOD.Studio.EventInstance getCoinsInstance;
 
     void Awake()
     {
@@ -97,8 +106,10 @@ public class PlayerController : MonoBehaviour
         seeHandsInstance = RuntimeManager.CreateInstance(SeeHandsSound);
         filledSlotInstance = RuntimeManager.CreateInstance(FilledSlotSound);
         buyCardInstance = RuntimeManager.CreateInstance(BuyCardSound);
-        musicInstance = RuntimeManager.CreateInstance(Music);
-        musicInstance.start();
+        seeGameInstance = RuntimeManager.CreateInstance(SeeGameSound);
+        closeGameInstance = RuntimeManager.CreateInstance(CloseGameSound);
+        pauseInstance = RuntimeManager.CreateInstance(PauseSound);
+        getCoinsInstance = RuntimeManager.CreateInstance(GetCoinsSound);
     }
     void Update()
     {
@@ -120,8 +131,9 @@ public class PlayerController : MonoBehaviour
             SeeGame();
         }
         playerHealth = scoreKeeperScript.playerAHealth;
-        if(Input.GetKeyDown(KeyCode.Escape) && !isWalletOpen && !isLookingAtHands)
+        if(Input.GetKeyUp(KeyCode.Escape) && !isWalletOpen && !isLookingAtHands)
         {
+            pauseInstance.start();
             isPaused = !isPaused;
         }
         PauseMethod();
@@ -143,13 +155,13 @@ public class PlayerController : MonoBehaviour
     }
     private void UI()
     {
-        Color targetColor = isInspecting ? opaque : transparent;
+        Color targetColor = isInspecting ? inspectColor : transparent;
         inspectOverlay.color = Color.Lerp(inspectOverlay.color, targetColor, Time.deltaTime * fastSmoothSpeed);
     }
     private void PauseMethod()
     {
         pauseObject.SetActive(isPaused);
-        Color targetColor = isPaused ? opaque : transparent;
+        Color targetColor = isPaused ? pauseColor : transparent;
         pauseOverlay.color = Color.Lerp(pauseOverlay.color, targetColor, Time.deltaTime * fastSmoothSpeed);
     }
     private void CardMovement()
@@ -346,6 +358,10 @@ public class PlayerController : MonoBehaviour
     {
         isWalletOpen = !isWalletOpen;
     }
+    public void TogglePause()
+    {
+        isPaused = !isPaused;
+    }
     private void UpdateSlotStateOnRemove()
     {
         if (selectedRigidbody == null)
@@ -395,12 +411,14 @@ public class PlayerController : MonoBehaviour
             if (scroll > 0f)
             {
                 isLookingAtGame = true;
+                seeGameInstance.start();
                 StartCoroutine(DelayUpScrollCheck());
                 StartCoroutine(DelayScrollCheck());
             }
             else if (scroll < 0f)
             {
                 isLookingAtGame = false;
+                closeGameInstance.start();
                 StartCoroutine(DelayUpScrollCheck());
                 StartCoroutine(DelayScrollCheck());
             }
@@ -420,6 +438,8 @@ public class PlayerController : MonoBehaviour
         if(isWalletOpen && Input.GetKeyDown(KeyCode.Escape) && !isPaused)
         {
             cameraAnimator.Play("ReturnFromWallet");
+            isLookingAtGame = false;
+            isLookingAtHands = false;
             isWalletOpen = false;
         }
         if(isLookingAtHands && Input.GetKeyDown(KeyCode.Escape) && !isPaused)
@@ -450,7 +470,7 @@ public class PlayerController : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit) && hit.collider.CompareTag("CoinBag"))
             {
-                buyCardInstance.start();
+                getCoinsInstance.start();
                 InstantiateTwoCoins();
                 scoreKeeperScript.turnStep = 1;
                 canBuy = false;
@@ -515,5 +535,12 @@ public class PlayerController : MonoBehaviour
             yield return null;
         }
         canCheckUpScroll = true;
+    }
+    public IEnumerator NotEnoughCoinsAnim()
+    {
+        coinsText.color = Color.Lerp(coinsText.color, red, Time.deltaTime * fastSmoothSpeed);
+        yield return new WaitForSeconds(0.1f);
+        coinsText.color = Color.Lerp(coinsText.color, white, Time.deltaTime * mediumSmoothSpeed);
+        yield return null;
     }
 }
