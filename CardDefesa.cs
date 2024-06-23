@@ -13,7 +13,9 @@ public class CardDefesa : MonoBehaviour
     [SerializeField] private Text nameText;
     [SerializeField] private string description = "Default";
     [SerializeField] private Text descriptionText;
+    public bool cardBelongsToA = false;
     public bool canBeMovedD = false;
+    public bool cardIsInHandD = false;
     void Awake()
     {
         nameText.text = name;

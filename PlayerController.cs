@@ -35,6 +35,7 @@ public class PlayerController : MonoBehaviour
     private float mediumSmoothSpeed = 10f;
     private float fastSmoothSpeed = 20f;
     public bool canBuy = true;
+    [SerializeField] private List<GameObject> cardsInHand;
     [SerializeField] private List<GameObject> cardDeck;
     [SerializeField] private List<GameObject> coins;
     [SerializeField] private Transform cardSpawnPoint;
@@ -87,11 +88,6 @@ public class PlayerController : MonoBehaviour
     private FMOD.Studio.EventInstance pauseInstance;
     private string GetCoinsSound = "event:/GetCoins";
     private FMOD.Studio.EventInstance getCoinsInstance;
-
-    void Awake()
-    {
-        inspectOverlay.color = transparent;
-    }
     void Start()
     {
         //camera
@@ -139,6 +135,7 @@ public class PlayerController : MonoBehaviour
         PauseMethod();
         UpdateCoinCount();
         HUD();
+        cameraAnimator.SetBool("LookToPlayerB", !scoreKeeperScript.AorB);
     }
     private bool IsPointerOverCard()
     {
@@ -229,7 +226,7 @@ public class PlayerController : MonoBehaviour
             SnapToSlot();
             if(selectedRigidbody.position.z < -20f)
             {
-                //move card to hand
+                MoveCardToHand(selectedRigidbody.gameObject);
             }
             selectedRigidbody.isKinematic = false;
             selectedRigidbody.velocity = Vector3.zero;
@@ -516,6 +513,10 @@ public class PlayerController : MonoBehaviour
             newCoin2.transform.SetParent(walletObject.transform);
         }
     }
+    private void MoveCardToHand(GameObject card)
+    {
+        cardsInHand.Add(card);
+    }
     private IEnumerator DelayScrollCheck()
     {
         canCheckScroll = false;
@@ -541,6 +542,7 @@ public class PlayerController : MonoBehaviour
         coinsText.color = Color.Lerp(coinsText.color, red, Time.deltaTime * fastSmoothSpeed);
         yield return new WaitForSeconds(0.1f);
         coinsText.color = Color.Lerp(coinsText.color, white, Time.deltaTime * mediumSmoothSpeed);
+        coinsText.color = white;
         yield return null;
     }
 }

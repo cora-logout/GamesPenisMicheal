@@ -76,9 +76,17 @@ public class CardLibrary : MonoBehaviour
             { "Cachilda", 
                 new CardP("Cachilda",
                 new Dictionary<string, Skill> {
-                    { "Mordida", new Skill(10, 2, "Default") },
+                    { "Mordida", new Skill(10, 1, "Default") },
                     { "Latir", new Skill(0, 1, "ScareI") },
                     { "Camuflar", new Skill(0, 3, "Hide") }
+                })
+            },
+            { "Chapéu Fumante", 
+                new CardP("Chapéu Fumante",
+                new Dictionary<string, Skill> {
+                    { "Bomba de Fumaça", new Skill(15, 3, "Hide") },
+                    { "Soco Simples", new Skill(10, 1, "Default") },
+                    { "Chutar a Mesa", new Skill(10, 3, "KickTable") }
                 })
             },
             { "Doutor Afanasfávio",
@@ -100,9 +108,10 @@ public class CardLibrary : MonoBehaviour
         };
         cardDefenseDictionary = new Dictionary<string, CardD>
         {
-            { "Caixa de Som", new CardD("Caixa de Som", 10) },
-            { "Casaco de Frio", new CardD("Casaco de Frio", 15) },
-            { "Pistola Globeriana V30", new CardD("Pistola Globeriana V30", 10) }
+            { "Caixa de Som", new CardD("Caixa de Som", 10, "Default") },
+            { "Casaco de Frio", new CardD("Casaco de Frio", 15, "IncreaseSnowChance") },
+            { "Guarda Chuva", new CardD("Guarda Chuva", 15, "ChuvaDef") },
+            { "Pistola Globeriana V30", new CardD("Pistola Globeriana V30", 10, "Default") }
         };
         cardMagicDictionary = new Dictionary<string, CardM>
         {
@@ -163,7 +172,6 @@ public class CardLibrary : MonoBehaviour
         }
     }
 }
-
 public class CardP
 {
     public string Name { get; set; }
@@ -175,7 +183,6 @@ public class CardP
         Skills = skills;
     }
 }
-
 public class Skill
 {
     public int Damage { get; set; }
@@ -189,19 +196,19 @@ public class Skill
         Type = type;
     }
 }
-
 public class CardD
 {
     public string Name { get; set; }
     public int Health { get; set; }
+    public string Effect { get; set; }
 
-    public CardD(string name, int health)
+    public CardD(string name, int health, string effect)
     {
         Name = name;
         Health = health;
+        Effect = effect;
     }
 }
-
 public class CardM
 {
     public string Name { get; set; }//Name of card

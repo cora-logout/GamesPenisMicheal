@@ -44,7 +44,7 @@ public class EffectLibrary : MonoBehaviour
             { "HealI", new Effect { type = EffectType.Heal, effectValue = 10 } },
             { "HealII", new Effect { type = EffectType.Heal, effectValue = 15 } },
             { "HealIII", new Effect { type = EffectType.Heal, effectValue = 20 } },
-            { "Hide", new Effect { type = EffectType.Hide, chance = 0.75f } },
+            { "Hide", new Effect { type = EffectType.Hide, chance = 0.5f } },
             { "Lock", new Effect { type = EffectType.Lock, effectValue = 1 } },
             { "PoisonI", new Effect { type = EffectType.Poison, effectValue = 10, duration = 1 } },
             { "PoisonII", new Effect { type = EffectType.Poison, effectValue = 15, duration = 1 } },
@@ -52,15 +52,16 @@ public class EffectLibrary : MonoBehaviour
             { "Relax", new Effect { type = EffectType.Relax } },
             { "ScareI", new Effect { type = EffectType.Scare, effectValue = 10, duration = 1 } },
             { "ScareII", new Effect { type = EffectType.Scare, effectValue = 10, duration = 2, subsequentValue = 5 } },
-            { "ScareIII", new Effect { type = EffectType.Scare, effectValue = 15, duration = 1, subsequentValue = 10 } }
+            { "ScareIII", new Effect { type = EffectType.Scare, effectValue = 15, duration = 1, subsequentValue = 10 } },
+            { "IncreaseSnowChance", new Effect { type = EffectType.IncreaseSnowChance } },
+            { "ChuvaDef", new Effect { type = EffectType.ChuvaDef } },
+            { "KickTable", new Effect { type = EffectType.KickTable } }
         };
     }
-
     void Start()
     {
         scoreKeeper = FindObjectOfType<ScoreKeeper>();
     }
-
     public void ApplyEffect(string type)
     {
         bool AorB = scoreKeeper.AorB;
@@ -84,7 +85,7 @@ public class EffectLibrary : MonoBehaviour
                     Debug.Log("Healed " + effect.effectValue + " HP");
                     break;
                 case EffectType.Hide:
-                    Debug.Log("Character has a " + (effect.effectValue * 100) + "% chance to evade attacks");
+                    Debug.Log("Character has a " + (effect.chance * 100) + "% chance to evade attacks");
                     break;
                 case EffectType.Lock:
                     Debug.Log("Locked opponent's character for " + effect.effectValue + " turns");
@@ -104,6 +105,16 @@ public class EffectLibrary : MonoBehaviour
                     {
                         Debug.Log("Scared: Enemy attack reduced by " + effect.effectValue + " for " + effect.duration + " turn(s)");
                     }
+                    break;
+                case EffectType.IncreaseSnowChance:
+                    Debug.Log("Increased snow chance");
+                    scoreKeeper.snowChance = scoreKeeper.snowChance -1;
+                    break;
+                case EffectType.ChuvaDef:
+                    Debug.Log("Player is protected against rain");
+                    break;
+                case EffectType.KickTable:
+                    scoreKeeper.KickTable();
                     break;
                 default:
                     Debug.LogWarning("Effect type not handled: " + effect.type);
@@ -133,7 +144,10 @@ public enum EffectType
     Lock,
     Poison,
     Relax,
-    Scare
+    Scare,
+    IncreaseSnowChance,
+    ChuvaDef,
+    KickTable
 }
 
 

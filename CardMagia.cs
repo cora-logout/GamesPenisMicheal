@@ -13,7 +13,9 @@ public class CardMagia : MonoBehaviour
     [SerializeField] private Text nameText;
     [SerializeField] private string cardDescription = "Default";
     [SerializeField] private Text descriptionText;
+    public bool cardBelongsToA = false;
     public bool canBeMovedM = false;
+    public bool cardIsInHandM = false;
     void Awake()
     {
         nameText.text = name;

@@ -25,6 +25,7 @@ public class CardPersonagem : MonoBehaviour
     public Text skill3CostText;
     public bool canBeMovedP = false;
     public bool cardBelongsToA = false;
+    public bool cardIsInHandP = false;
     [SerializeField] private GameObject skillButtons;
     private CardLibrary cardLibrary;
     private ScoreKeeper scoreKeeper;
@@ -55,6 +56,7 @@ public class CardPersonagem : MonoBehaviour
     {
         UpdateTexts();
         DetectSkillClicks();
+        HealthControl();
     }
     private void UpdateTexts()
     {
@@ -90,6 +92,18 @@ public class CardPersonagem : MonoBehaviour
                     cardLibrary.CardPSkill(skillButton.cardName, skillButton.skillNumber - 1);
                 }
             }
+        }
+    }
+    private void HealthControl()
+    {
+        if(health <= 0)
+        {
+            SoundEffects soundEffects = FindObjectOfType<SoundEffects>();
+            if (soundEffects != null)
+            {
+                soundEffects.PlayCardSound(cardName + "Death");
+            }
+            Destroy(this.gameObject);
         }
     }
 }

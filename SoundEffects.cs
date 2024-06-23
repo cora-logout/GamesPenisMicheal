@@ -17,17 +17,23 @@ public class SoundEffects : MonoBehaviour
             { "CupcakeActivate", "event:/Magic/Cupcake" },
             { "TorreDoMagoActivate", "event:/Magic/TorreDoMago" },
             { "PoteDePiclesActivate", "event:/Magic/PoteDePicless" },
+            { "SalsichaActivate", "event:/Magic/Cupcake" },
+            { "Tritura-CartasActivate", "event:/Characters/Activate/Tritura-Cartas" },
         //Activate CHAR
-            { "Billy Feijão Do MalActivate", "event:/Characters/Activate/Billy"},
+            { "Billy Feijão Do MalActivate", "event:/Characters/Activate/Billy" },
             { "Bufos RegularisActivate", "event:/Characters/Activate/BufosRegularis" },
-            { "Doutor AfanasfávioActivate", "event:/Characters/Activate/DoutorAfanasfávio"},
-            { "FantasmaActivate", "event:/Characters/Activate/Fantasma"},
+            { "Doutor AfanasfávioActivate", "event:/Characters/Activate/DoutorAfanasfávio" },
+            { "FantasmaActivate", "event:/Characters/Activate/Fantasma" },
             { "MeloActivate", "event:/Characters/Activate/Melo" },
+            { "Chapéu FumanteActivate", "event:/Characters/Activate/ChapeuFumante" },
         //Attack CHAR
-            { "Billy Feijão do MalAttack", "event:/Characters/Attack/Billy"},
+            { "Billy Feijão do MalAttack", "event:/Characters/Attack/Billy" },
             { "Bufos RegularisAttack", "event:/Characters/Attack/BufosRegularis" },
-            { "Doutor AfanasfávioAttack", "event:/Characters/Attack/DoutorAfanasfávio"}
+            { "Doutor AfanasfávioAttack", "event:/Characters/Attack/DoutorAfanasfávio" },
+            { "Chapéu FumanteAttack", "event:/Characters/Attack/ChapeuFumante" },
         //Death CHAR
+            { "Bufos RegularisDeath", "event:/Characters/Death/BufosRegularis" },
+            { "Doutor AfanasfávioDeath", "event:/Characters/Death/DoutorAfanasfávio" }
         //Death DEF
         };
     }

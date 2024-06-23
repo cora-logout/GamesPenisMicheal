@@ -21,7 +21,7 @@ public class ScoreKeeper : MonoBehaviour
     public int defenseAHealth;
     public int defenseBHealth;
     public int turnStep = 0;
-    public int currentTurn = -1;
+    private int currentTurn = -1;
     public int playerACoins = 0;
     public int playerBCoins = 0;
     public bool playerAHasCharacter = false;
@@ -49,6 +49,7 @@ public class ScoreKeeper : MonoBehaviour
     private int defaultSnowChance = 9;
     public int rainMaxParticles = 300;
     public int snowMaxParticles = 1000;
+    private int dustMaxParticles = 50;
     private bool hasRained = false;
     private bool hasSnowed = false;
     [SerializeField] private ParticleSystem rainPS;
@@ -59,6 +60,8 @@ public class ScoreKeeper : MonoBehaviour
     [SerializeField] private Color semiOpaque;
     [SerializeField] private Color opaque;
     [SerializeField] private GameObject dudeObject;
+    [SerializeField] private Animator cameraAnimator;
+    [SerializeField] private Animator peAnimator;
     private Vector3 dudeDefaultPosition = new Vector3(-0.5f, 5.91f, -16.91f);
     private Vector3 dudePosition = new Vector3(0, 8.86f, -18.25f);
     private Quaternion dudeDefaultRotation = Quaternion.Euler(-25.299f, 0, 0);
@@ -68,12 +71,14 @@ public class ScoreKeeper : MonoBehaviour
     private FMOD.Studio.EventInstance rainInstance;
     private string SnowSound = "event:/Ambience/Snow";
     private FMOD.Studio.EventInstance snowInstance;
-    private string Music = "event:/Music/PlaceHolder";
+    private string Music = "event:/Music/TimeForYetAnotherBattle";
     private FMOD.Studio.EventInstance musicInstance;
     private string ShowDudeSound = "event:/ShowDude";
     private FMOD.Studio.EventInstance showDudeInstance;
     private string HideDudeSound = "event:/HideDude";
     private FMOD.Studio.EventInstance hideDudeInstance;
+    private string KickTableSound = "event:/KickTable";
+    private FMOD.Studio.EventInstance kickTableInstance;
     public PlayerController playerAController;
     /*Turn logic
         turnStep 0 = Can buy two coins or one card
@@ -111,6 +116,7 @@ public class ScoreKeeper : MonoBehaviour
     }
     private void Start()
     {
+        AorB = true;
         musicInstance = RuntimeManager.CreateInstance(Music);
         musicInstance.start();
         playerAHealth = 50;
@@ -119,6 +125,7 @@ public class ScoreKeeper : MonoBehaviour
         snowInstance = RuntimeManager.CreateInstance(SnowSound);
         showDudeInstance = RuntimeManager.CreateInstance(ShowDudeSound);
         hideDudeInstance = RuntimeManager.CreateInstance(HideDudeSound);
+        kickTableInstance = RuntimeManager.CreateInstance(KickTableSound);
         dudeObject.SetActive(false);
     }
     void Update()
@@ -129,7 +136,7 @@ public class ScoreKeeper : MonoBehaviour
             {
                 PlayerATurn();
             }
-            else if(!playerAPreTurnOver)
+            else
             {
                 PlayerAPreTurn();
             }
@@ -140,7 +147,7 @@ public class ScoreKeeper : MonoBehaviour
             {
                 PlayerBTurn();
             }
-            else if(!playerBPreTurnOver)
+            else
             {
                 PlayerBPreTurn();
             }
@@ -149,8 +156,8 @@ public class ScoreKeeper : MonoBehaviour
         {
             SwitchTurns();
         }
-        DamageLogic();
         Weather();
+        MusicControl();
     }
     void PlayerATurn()
     {
@@ -198,6 +205,30 @@ public class ScoreKeeper : MonoBehaviour
             turnStep = 2;
         }
     }
+    private void MusicControl()
+    {
+        if(currentTurn < 0)
+        {
+            musicInstance.setParameterByName("TFYABBassline", 0);
+            musicInstance.setParameterByName("TFYABEpiano", 1);
+        }
+        if(currentTurn > 0)
+        {
+            if(turnStep == 0)
+            {
+                musicInstance.setParameterByName("TFYABBassline", 1);
+                musicInstance.setParameterByName("TFYABFunkyBassline", 0);
+                musicInstance.setParameterByName("TFYABKick", 1);
+                musicInstance.setParameterByName("TFYABShaker", 0);
+            }
+            else if(turnStep == 1)
+            {
+                musicInstance.setParameterByName("TFYABBassline", 0);
+                musicInstance.setParameterByName("TFYABFunkyBassline", 1);
+                musicInstance.setParameterByName("TFYABShaker", 1);
+            }
+        }
+    }
     public void SwitchTurns()
     {
         playerACanPlay = !playerACanPlay;
@@ -211,11 +242,8 @@ public class ScoreKeeper : MonoBehaviour
         {
             RollSnow();
         }
+        AorB = !AorB;
         turnStep = 0;
-    }
-    private void DamageLogic()
-    {
-        AorB = (playerACanAttack && playerACanPlay);
     }
     public void DoDamage(int damage)
     {
@@ -351,6 +379,10 @@ public class ScoreKeeper : MonoBehaviour
     {
         StartCoroutine(ShowDude());
     }
+    public void KickTable()
+    {
+        StartCoroutine(KickTableAnim());
+    }
     private IEnumerator ShowDude()
     {
         dudeObject.SetActive(true);
@@ -388,5 +420,29 @@ public class ScoreKeeper : MonoBehaviour
         hideDudeInstance.start();
         dudeObject.SetActive(false);
         yield return null;
+    }
+    private IEnumerator KickTableAnim()
+    {
+        //move camera and disable dust
+        var dustPSMain = dustPS.main;
+        dustPSMain.maxParticles = (int)Mathf.Lerp(dustPSMain.maxParticles, 0, Time.deltaTime * 25f);
+        cameraAnimator.SetBool("KickTable", true);
+        
+        yield return new WaitForSeconds(0.75f);
+        //start kick
+        peAnimator.SetBool("Kick", true);
+
+        yield return new WaitForSeconds(0.4f);
+        //sfx
+        kickTableInstance.start();
+
+        yield return new WaitForSeconds(0.5f);
+        //finish kick
+        peAnimator.SetBool("Kick", false);
+
+        yield return new WaitForSeconds(0.15f);
+        //return camera and dust
+        dustPSMain.maxParticles = (int)Mathf.Lerp(0, dustMaxParticles, Time.deltaTime * 25f);
+        cameraAnimator.SetBool("KickTable", false);
     }
 }
