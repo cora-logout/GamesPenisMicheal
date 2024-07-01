@@ -29,6 +29,7 @@ public class CardPersonagem : MonoBehaviour
     public bool cardIsActive = false;
     [SerializeField] private GameObject skillButtons;
     [SerializeField] private GameObject outline;
+    [SerializeField] private Animator imageAnimator;
     private Material material;
     private Color originalOutlineColor;
     private float defaultOutlineOpacity = 0f;
@@ -74,7 +75,7 @@ public class CardPersonagem : MonoBehaviour
     void Update()
     {
         UpdateTexts();
-        if(cardIsActive)
+        if(cardIsActive && scoreKeeper.playerACanAttack)
         {
             DetectSkillClicks();
         }
@@ -91,6 +92,7 @@ public class CardPersonagem : MonoBehaviour
         {
             SetOpacity(defaultOutlineOpacity);
         }
+        imageAnimator.SetBool("IsActive", cardIsActive);
         HealthControl();
     }
     private void OnMouseEnter()

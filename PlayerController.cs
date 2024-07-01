@@ -25,8 +25,7 @@ public class PlayerController : MonoBehaviour
     - Colocar e tirar cartas da mão
 
     Coisas pra consertar:
-    - Habilidades não podem ser usadas para cartas estáticas, ignorar !cardCanBeMoved?
-    if nao pode mexer, ve se ta no ataque sla???????????
+    - Múltiplas cartas podem ser colocadas no mesmo slot, ignorando os slotstates
     */
     private Camera mainCamera;
     private Rigidbody selectedRigidbody;
@@ -303,46 +302,34 @@ public class PlayerController : MonoBehaviour
         {
             string slotTag = hitCollider.tag;
             string cardTag = selectedRigidbody.tag;
+            Debug.Log(slotTag);
 
-            if (slotStates.ContainsKey(slotTag) && !slotStates[slotTag] /*&& slotTag.Replace("Slot", "") == cardTag*/)
+            if (slotStates.ContainsKey(slotTag) && !slotStates[slotTag] && slotTag.Replace("Slot", "") == cardTag)
             {
                 Vector3 slotPosition = hitCollider.transform.position;
                 selectedRigidbody.position = new Vector3(slotPosition.x, selectedRigidbody.position.y, slotPosition.z);
                 slotStates[slotTag] = true;
-                Debug.Log(slotStates[slotTag]);
                 filledSlotInstance.start();
                 SoundEffects soundEffects = FindObjectOfType<SoundEffects>();
-                if (soundEffects != null)
-                {
-                    soundEffects.PlayCardSound(selectedRigidbody.name.Replace("(Clone)", "").Trim() + "Activate");
-                }
+                soundEffects.PlayCardSound(selectedRigidbody.name.Replace("(Clone)", "").Trim() + "Activate");
 
                 if(cardTag == "Personagem")
                 {
                     scoreKeeperScript.playerAHasCharacter = true;
                     CardPersonagem cardPScript = selectedRigidbody.GetComponent<CardPersonagem>();
-                    if(cardPScript != null)
-                    {
-                        cardPScript.canBeMovedP = false;
-                        cardPScript.cardIsActive = true;
-                    }
+                    cardPScript.canBeMovedP = false;
+                    cardPScript.cardIsActive = true;
                 }
                 if(cardTag == "Defesa")
                 {
                     scoreKeeperScript.playerAHasDefense = true;
                     CardDefesa cardDScript = selectedRigidbody.GetComponent<CardDefesa>();
-                    if(cardDScript != null)
-                    {
-                        cardDScript.canBeMovedD = false;
-                    }
+                    cardDScript.canBeMovedD = false;
                 }
                 if(cardTag == "Magia")
                 {
                     CardMagia cardMScript = selectedRigidbody.GetComponent<CardMagia>();
-                    if(cardMScript != null)
-                    {
-                        cardMScript.canBeMovedM = false;
-                    }
+                    cardMScript.canBeMovedM = false;
                 }
                 break;
             }
@@ -483,7 +470,8 @@ public class PlayerController : MonoBehaviour
             if (Physics.Raycast(ray, out hit) && hit.collider.CompareTag("CoinBag"))
             {
                 getCoinsInstance.start();
-                InstantiateTwoCoins();
+                InstantiateCoin();//instantiate two coins
+                InstantiateCoin();
                 scoreKeeperScript.turnStep = 1;
                 canBuy = false;
             }
@@ -516,17 +504,11 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-    private void InstantiateTwoCoins()
+    private void InstantiateCoin()
     {
-        if(coins.Count > 0 && canBuy)
-        {
-            int randomIndex1 = Random.Range(0, coins.Count);
-            int randomIndex2 = Random.Range(0, coins.Count);
-            GameObject newCoin1 = Instantiate(coins[randomIndex1], coinSpawnPoint.position, coinSpawnPoint.rotation);
-            GameObject newCoin2 = Instantiate(coins[randomIndex2], coinSpawnPoint.position, coinSpawnPoint.rotation);
-            newCoin1.transform.SetParent(walletObject.transform);
-            newCoin2.transform.SetParent(walletObject.transform);
-        }
+        int randomIndex = Random.Range(0, coins.Count);
+        GameObject newCoin = Instantiate(coins[randomIndex], coinSpawnPoint.position, coinSpawnPoint.rotation);
+        newCoin.transform.SetParent(walletObject.transform);
     }
     private void MoveCardToHand(GameObject card)
     {
@@ -539,7 +521,7 @@ public class PlayerController : MonoBehaviour
     private IEnumerator DelayScrollCheck()
     {
         canCheckScroll = false;
-        yield return new WaitForSeconds(0.25f);
+        yield return new WaitForSeconds(0.2f);
         while (Input.GetAxis("Mouse ScrollWheel") != 0)
         {
             yield return null;

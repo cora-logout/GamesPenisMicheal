@@ -149,7 +149,6 @@ public class ScoreKeeper : MonoBehaviour
                 Instantiate(weirdRoom, roomSpawnPos, transform.rotation);
                 break;
             default: 
-                Debug.LogError("Room not selected");
                 break;
         }
     }
@@ -182,7 +181,6 @@ public class ScoreKeeper : MonoBehaviour
                 musicInstance.setParameterByName("YPITSWorkPerc", 1);
                 break;
             default:
-                Debug.LogWarning("Unknown song selected");
                 break;
         }
         musicInstance.start();
@@ -302,7 +300,6 @@ public class ScoreKeeper : MonoBehaviour
                 }
                 break;
             default:
-                Debug.LogWarning("Unknown song selected");
                 break;
         }
     }
