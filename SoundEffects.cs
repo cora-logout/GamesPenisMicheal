@@ -18,7 +18,8 @@ public class SoundEffects : MonoBehaviour
             { "TorreDoMagoActivate", "event:/Magic/TorreDoMago" },
             { "PoteDePiclesActivate", "event:/Magic/PoteDePicless" },
             { "SalsichaActivate", "event:/Magic/Cupcake" },
-            { "Tritura-CartasActivate", "event:/Characters/Activate/Tritura-Cartas" },
+            { "Tritura-CartasActivate", "event:/Magic/Tritura-Cartas" },
+            { "Abdução de CartasActivate", "event:/Magic/UFO" },
         //Activate CHAR
             { "Billy Feijão Do MalActivate", "event:/Characters/Activate/Billy" },
             { "Bufos RegularisActivate", "event:/Characters/Activate/BufosRegularis" },

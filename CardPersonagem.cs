@@ -26,13 +26,27 @@ public class CardPersonagem : MonoBehaviour
     public bool canBeMovedP = false;
     public bool cardBelongsToA = false;
     public bool cardIsInHandP = false;
+    public bool cardIsActive = false;
     [SerializeField] private GameObject skillButtons;
+    [SerializeField] private GameObject outline;
+    private Material material;
+    private Color originalOutlineColor;
+    private float defaultOutlineOpacity = 0f;
+    private float hoverOutlineOpacity = 1f;
+    private bool isHovering = false;
+    private float mediumSmoothSpeed = 15f;
+    private BoxCollider cardCollider;
+    private Rigidbody rb;
     private CardLibrary cardLibrary;
     private ScoreKeeper scoreKeeper;
+    private PlayerController playerController;
     private void Awake()
     {
         cardLibrary = FindObjectOfType<CardLibrary>();
         scoreKeeper = FindObjectOfType<ScoreKeeper>();
+        playerController = FindObjectOfType<PlayerController>();
+        cardCollider = GetComponent<BoxCollider>();
+        rb = GetComponent<Rigidbody>();
         //Check who just bought the card
         if(scoreKeeper.playerACanPlay)
         {
@@ -51,12 +65,47 @@ public class CardPersonagem : MonoBehaviour
             { "Skill2", 2 },
             { "Skill3", 3 }
         };
+
+        Renderer renderer = outline.GetComponent<Renderer>();
+        material = renderer.material;
+        originalOutlineColor = material.color;
+        SetOpacity(defaultOutlineOpacity);
     }
     void Update()
     {
         UpdateTexts();
-        DetectSkillClicks();
+        if(cardIsActive)
+        {
+            DetectSkillClicks();
+        }
+        cardCollider.enabled = canBeMovedP;
+        if(cardIsActive)
+        {
+            StartCoroutine(MakeCardKinematic());
+        }
+        if(!playerController.isInspecting)//only display outline if isn't inspecting
+        {
+            Outline();
+        }
+        else
+        {
+            SetOpacity(defaultOutlineOpacity);
+        }
         HealthControl();
+    }
+    private void OnMouseEnter()
+    {
+        isHovering = true;
+    }
+    private void OnMouseExit()
+    {
+        isHovering = false;
+    }
+    private void SetOpacity(float opacity)
+    {
+        Color color = originalOutlineColor;
+        color.a = opacity;
+        material.color = color;
     }
     private void UpdateTexts()
     {
@@ -71,14 +120,7 @@ public class CardPersonagem : MonoBehaviour
     }
     private void DetectSkillClicks()
     {
-        if(cardBelongsToA)
-        {
-            skillButtons.SetActive(scoreKeeper.playerACanAttack);
-        }
-        if(!cardBelongsToA)
-        {
-            skillButtons.SetActive(scoreKeeper.playerBCanAttack);
-        }
+        skillButtons.SetActive(cardIsActive);
 
         if (Input.GetMouseButtonUp(0))
         {
@@ -90,6 +132,8 @@ public class CardPersonagem : MonoBehaviour
                 if (skillButton != null && cardName == skillButton.cardName)
                 {
                     cardLibrary.CardPSkill(skillButton.cardName, skillButton.skillNumber - 1);
+                    skillButton.currentCoolDown = skillButton.coolDown;
+                    skillButton.Cooldown();
                 }
             }
         }
@@ -105,5 +149,44 @@ public class CardPersonagem : MonoBehaviour
             }
             Destroy(this.gameObject);
         }
+    }
+    private void Outline()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            Transform hitTransform = hit.collider.transform;
+
+            if (hitTransform == transform)
+            {
+                isHovering = true;
+            }
+            else
+            {
+                isHovering = false;
+            }
+        }
+        else
+        {
+            isHovering = false;
+        }
+
+        if (isHovering)
+        {
+            float targetOpacity = Mathf.Lerp(material.color.a, hoverOutlineOpacity, Time.deltaTime * mediumSmoothSpeed);
+            SetOpacity(targetOpacity);
+        }
+        else
+        {
+            float targetOpacity = Mathf.Lerp(material.color.a, defaultOutlineOpacity, Time.deltaTime * mediumSmoothSpeed);
+            SetOpacity(targetOpacity);
+        }
+    }
+    private IEnumerator MakeCardKinematic()
+    {
+        yield return new WaitForSeconds(0.1f);
+        rb.isKinematic = true;
     }
 }

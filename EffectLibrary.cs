@@ -73,6 +73,10 @@ public class EffectLibrary : MonoBehaviour
                 case EffectType.Dude:
                     scoreKeeper.DudePopUp();
                     break;
+                case EffectType.Fly:
+                    Debug.Log("Character is flying");
+                    // fazer a carta voar no tabuleiro, imune a ataques terrestres
+                    break;
                 case EffectType.Heal:
                     if (AorB)
                     {
@@ -83,6 +87,9 @@ public class EffectLibrary : MonoBehaviour
                         scoreKeeper.playerBHealth += effect.effectValue;
                     }
                     Debug.Log("Healed " + effect.effectValue + " HP");
+                    break;
+                case EffectType.Hack:
+                    Debug.Log("Apply hack effect");
                     break;
                 case EffectType.Hide:
                     Debug.Log("Character has a " + (effect.chance * 100) + "% chance to evade attacks");
@@ -116,6 +123,12 @@ public class EffectLibrary : MonoBehaviour
                 case EffectType.KickTable:
                     scoreKeeper.KickTable();
                     break;
+                case EffectType.StealRandomCard:
+                    scoreKeeper.StealRandomCard(AorB);
+                    break;
+                case EffectType.VisionLoss:
+                    //atrapalhar a visão do personagem inimigo
+                    break;
                 default:
                     Debug.LogWarning("Effect type not handled: " + effect.type);
                     break;
@@ -139,15 +152,19 @@ public class Effect
 public enum EffectType
 {
     Dude,
+    Fly,
     Heal,
     Hide,
+    Hack,
     Lock,
     Poison,
     Relax,
     Scare,
     IncreaseSnowChance,
     ChuvaDef,
-    KickTable
+    KickTable,
+    StealRandomCard,
+    VisionLoss
 }
 
 

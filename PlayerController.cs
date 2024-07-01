@@ -5,12 +5,28 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using FMODUnity;
 using FMOD.Studio;
+/*COLOR PALLETTE
+F94144
+F3722C
+F8961E
+F9844A
+F9C74F
+90BE6D
+43AA8B
+4D908E
+577590
+277DA1
+*/
 
 public class PlayerController : MonoBehaviour
 {
     /*
     Coisas pra adicionar:
     - Colocar e tirar cartas da mão
+
+    Coisas pra consertar:
+    - Habilidades não podem ser usadas para cartas estáticas, ignorar !cardCanBeMoved?
+    if nao pode mexer, ve se ta no ataque sla???????????
     */
     private Camera mainCamera;
     private Rigidbody selectedRigidbody;
@@ -19,7 +35,7 @@ public class PlayerController : MonoBehaviour
     private Plane dragPlane;
     private Vector3 targetPosition;
     public int playerHealth = 50;
-    [SerializeField] private bool isInspecting = false;
+    public bool isInspecting = false;
     [SerializeField]  private bool isReturning = false;
     [SerializeField] private bool isWalletOpen = false;
     [SerializeField] private ScoreKeeper scoreKeeperScript;
@@ -47,6 +63,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Color transparent;
     [SerializeField] private Color red;
     [SerializeField] private Color white;
+    [SerializeField] private Color coinYellow;
     [SerializeField] private GameObject pauseObject;
     [SerializeField] private Image pauseOverlay;
     [SerializeField] private GameObject walletObject;
@@ -185,10 +202,6 @@ public class PlayerController : MonoBehaviour
                 {
                     canBeMoved = cardDefesa.canBeMovedD;
                 }
-                else
-                {
-                    Debug.LogError("Card doesn't have a Card Script");
-                }
 
                 if(canBeMoved)
                 {
@@ -265,7 +278,7 @@ public class PlayerController : MonoBehaviour
         {
             selectedRigidbody.position = Vector3.Lerp(selectedRigidbody.position, originalPosition, fastSmoothSpeed * Time.deltaTime);
             selectedRigidbody.rotation = Quaternion.Lerp(selectedRigidbody.rotation, originalRotation, fastSmoothSpeed * Time.deltaTime);
-            if (Vector3.Distance(selectedRigidbody.position, originalPosition) < 0.01f && Quaternion.Angle(selectedRigidbody.rotation, originalRotation) < 1f)
+            if (Vector3.Distance(selectedRigidbody.position, originalPosition) < 0.01f && Quaternion.Angle(selectedRigidbody.rotation, originalRotation) < 0.5f)
             {
                 selectedRigidbody.position = originalPosition;
                 selectedRigidbody.rotation = originalRotation;
@@ -291,11 +304,12 @@ public class PlayerController : MonoBehaviour
             string slotTag = hitCollider.tag;
             string cardTag = selectedRigidbody.tag;
 
-            if (slotStates.ContainsKey(slotTag) && !slotStates[slotTag] && slotTag.Replace("Slot", "") == cardTag)
+            if (slotStates.ContainsKey(slotTag) && !slotStates[slotTag] /*&& slotTag.Replace("Slot", "") == cardTag*/)
             {
                 Vector3 slotPosition = hitCollider.transform.position;
                 selectedRigidbody.position = new Vector3(slotPosition.x, selectedRigidbody.position.y, slotPosition.z);
                 slotStates[slotTag] = true;
+                Debug.Log(slotStates[slotTag]);
                 filledSlotInstance.start();
                 SoundEffects soundEffects = FindObjectOfType<SoundEffects>();
                 if (soundEffects != null)
@@ -310,6 +324,7 @@ public class PlayerController : MonoBehaviour
                     if(cardPScript != null)
                     {
                         cardPScript.canBeMovedP = false;
+                        cardPScript.cardIsActive = true;
                     }
                 }
                 if(cardTag == "Defesa")
@@ -383,14 +398,14 @@ public class PlayerController : MonoBehaviour
         if(!isWalletOpen && !isInspecting && !isLookingAtGame && canCheckScroll)
         {
             float scroll = Input.GetAxis("Mouse ScrollWheel");
-            if (scroll > 0f && isLookingAtHands)
+            if (scroll > 0 && isLookingAtHands)
             {
                 seeHandsInstance.start();
                 isLookingAtHands = false;
                 StartCoroutine(DelayScrollCheck());
                 StartCoroutine(DelayUpScrollCheck());
             }
-            else if (scroll < 0f && !isLookingAtHands && !isLookingAtGame)
+            else if (scroll < 0 && !isLookingAtHands && !isLookingAtGame)
             {
                 closeHandsInstance.start();
                 isLookingAtHands = true;
@@ -405,14 +420,14 @@ public class PlayerController : MonoBehaviour
         if(!isWalletOpen && !isInspecting && !isLookingAtHands && canCheckUpScroll)
         {
             float scroll = Input.GetAxis("Mouse ScrollWheel");
-            if (scroll > 0f)
+            if (scroll > 0)
             {
                 isLookingAtGame = true;
                 seeGameInstance.start();
                 StartCoroutine(DelayUpScrollCheck());
                 StartCoroutine(DelayScrollCheck());
             }
-            else if (scroll < 0f)
+            else if (scroll < 0)
             {
                 isLookingAtGame = false;
                 closeGameInstance.start();
@@ -517,6 +532,10 @@ public class PlayerController : MonoBehaviour
     {
         cardsInHand.Add(card);
     }
+    public void ExitGame()
+    {
+        Application.Quit();
+    }
     private IEnumerator DelayScrollCheck()
     {
         canCheckScroll = false;
@@ -540,6 +559,14 @@ public class PlayerController : MonoBehaviour
     public IEnumerator NotEnoughCoinsAnim()
     {
         coinsText.color = Color.Lerp(coinsText.color, red, Time.deltaTime * fastSmoothSpeed);
+        yield return new WaitForSeconds(0.1f);
+        coinsText.color = Color.Lerp(coinsText.color, white, Time.deltaTime * mediumSmoothSpeed);
+        coinsText.color = white;
+        yield return null;
+    }
+    public IEnumerator SpentCoinsAnim()
+    {
+        coinsText.color = Color.Lerp(coinsText.color, coinYellow, Time.deltaTime * mediumSmoothSpeed);
         yield return new WaitForSeconds(0.1f);
         coinsText.color = Color.Lerp(coinsText.color, white, Time.deltaTime * mediumSmoothSpeed);
         coinsText.color = white;

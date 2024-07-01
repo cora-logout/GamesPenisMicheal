@@ -102,8 +102,32 @@ public class CardLibrary : MonoBehaviour
                 new Dictionary<string, Skill> { 
                     { "Golpe Ectoplásmico", new Skill(10, 1, "Default") }, 
                     { "Grito do Abismo", new Skill(5, 1, "Default") },
-                    { "Desaparecer", new Skill(0, 2, "Default") } 
+                    { "Desaparecer", new Skill(0, 2, "Hide") } 
                 }) 
+            },
+            { "João Bobão cara de Melão",
+                new CardP("João Bobão cara de Melão",
+                new Dictionary<string, Skill> {
+                    { "Soco Simples", new Skill(10, 1, "Default") },
+                    { "Uhhh", new Skill(30, 3, "Default") },
+                    { "Eu tenho skins raras no jogo e eu posso mostrar pra você se você quiser e sua mãe deixar a minha deixa mas tem que ver com a sua", new Skill(10, 1, "Default") }
+                })
+            },
+            { "Kary 233",
+                new CardP("Kary 233",
+                new Dictionary<string, Skill> {
+                    { "Ataque Cibernético", new Skill(5, 1, "Hack") },
+                    { "Ataque 2", new Skill(10, 1, "Default") },
+                    { "Ataque 3", new Skill(10, 1, "Default") }
+                })
+            },
+            { "Passarinho",
+                new CardP("Passarinho", 
+                new Dictionary<string, Skill> {
+                    { "Bicada", new Skill(10, 1, "Default") },
+                    { "Voar", new Skill(0, 2, "Fly") },
+                    { "Fazer Cocô", new Skill(0, 2, "VisionLoss") }
+                })
             }
         };
         cardDefenseDictionary = new Dictionary<string, CardD>
@@ -115,7 +139,8 @@ public class CardLibrary : MonoBehaviour
         };
         cardMagicDictionary = new Dictionary<string, CardM>
         {
-            { "Pote de Picles", new CardM("Pote de Picles", 0, "Lock", 1) }
+            { "Pote de Picles", new CardM("Pote de Picles", 0, "Lock", 1) },
+            { "Abdução de Cartas", new CardM("Abdução de Cartas", 0, "StealRandomCard", 0)}
         };
     }
     void Start()
@@ -149,6 +174,7 @@ public class CardLibrary : MonoBehaviour
                     soundEffects.PlayCardSound(cardName + "Attack");
                     Debug.Log("Used skill: " + skillName + ". With damage: " + damage + ". And cost: " + cost + ". And type: " + type);
                     scoreKeeper.DoDamage(damage);
+                    playerController.StartCoroutine(playerController.SpentCoinsAnim());
                     if(type != "Default")
                     {
                         effectLibrary.ApplyEffect(type);
@@ -158,7 +184,6 @@ public class CardLibrary : MonoBehaviour
                 {
                     notEnoughInstance.start();
                     playerController.StartCoroutine(playerController.NotEnoughCoinsAnim());
-                    Debug.Log("Not enough coins to use skill: " + skillName + ". Because it costs: " + cost + ". And playerA has: " + scoreKeeper.playerACoins + " coins.");
                 }
             }
             else

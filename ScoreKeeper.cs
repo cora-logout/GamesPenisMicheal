@@ -66,12 +66,25 @@ public class ScoreKeeper : MonoBehaviour
     private Vector3 dudePosition = new Vector3(0, 8.86f, -18.25f);
     private Quaternion dudeDefaultRotation = Quaternion.Euler(-25.299f, 0, 0);
     private Quaternion dudeRotation = Quaternion.Euler(48.864f, 0, 0);
+    public enum Song
+    {
+        TFYAB,
+        YPITS
+    }
+    public enum Room
+    {
+        WoodRoom,
+        TechRoom,
+        WeirdRoom
+    }
+    [SerializeField] private Song songSelector;
+    [SerializeField] private Room roomSelector;
     //FMOD
     private string RainSound = "event:/Ambience/Rain";
     private FMOD.Studio.EventInstance rainInstance;
     private string SnowSound = "event:/Ambience/Snow";
     private FMOD.Studio.EventInstance snowInstance;
-    private string Music = "event:/Music/TimeForYetAnotherBattle";
+    private string Music = "Song path";
     private FMOD.Studio.EventInstance musicInstance;
     private string ShowDudeSound = "event:/ShowDude";
     private FMOD.Studio.EventInstance showDudeInstance;
@@ -79,6 +92,17 @@ public class ScoreKeeper : MonoBehaviour
     private FMOD.Studio.EventInstance hideDudeInstance;
     private string KickTableSound = "event:/KickTable";
     private FMOD.Studio.EventInstance kickTableInstance;
+    private float basslineValue = 0;
+    private float funkyBasslineValue = 0;
+    private float shakerValue = 0;
+    private float YPITSFireLeadValue = 0;
+    private float YPITSSnareValue = 0;
+    private float YPITSVinylHornsValue = 0;
+    [SerializeField] private GameObject woodRoom;
+    [SerializeField] private GameObject techRoom;
+    [SerializeField] private GameObject weirdRoom;
+    private Vector3 roomSpawnPos = new Vector3(83.1f, 65.3914f, 128.8959f);
+
     public PlayerController playerAController;
     /*Turn logic
         turnStep 0 = Can buy two coins or one card
@@ -113,12 +137,25 @@ public class ScoreKeeper : MonoBehaviour
             _instance = this;
             DontDestroyOnLoad(gameObject);
         }
+        switch(roomSelector)
+        {
+            case Room.WoodRoom:
+                Instantiate(woodRoom, roomSpawnPos, transform.rotation);
+                break;
+            case Room.TechRoom:
+                Instantiate(techRoom, roomSpawnPos, transform.rotation);
+                break;
+            case Room.WeirdRoom:
+                Instantiate(weirdRoom, roomSpawnPos, transform.rotation);
+                break;
+            default: 
+                Debug.LogError("Room not selected");
+                break;
+        }
     }
     private void Start()
     {
         AorB = true;
-        musicInstance = RuntimeManager.CreateInstance(Music);
-        musicInstance.start();
         playerAHealth = 50;
         playerBHealth = 50;
         rainInstance = RuntimeManager.CreateInstance(RainSound);
@@ -127,6 +164,28 @@ public class ScoreKeeper : MonoBehaviour
         hideDudeInstance = RuntimeManager.CreateInstance(HideDudeSound);
         kickTableInstance = RuntimeManager.CreateInstance(KickTableSound);
         dudeObject.SetActive(false);
+        switch(songSelector)
+        {
+            case Song.TFYAB:
+                Music = "event:/Music/TimeForYetAnotherBattle";
+                musicInstance = RuntimeManager.CreateInstance(Music);
+                musicInstance.setParameterByName("TFYABBassline", 1);
+                musicInstance.setParameterByName("TFYABEpiano", 1);
+                musicInstance.setParameterByName("TFYABKick", 1);
+                break;
+            case Song.YPITS:
+                Music = "event:/Music/YourPlaceInTheSaloon";
+                musicInstance = RuntimeManager.CreateInstance(Music);
+                musicInstance.setParameterByName("YPITSVinylHorns", 0);
+                musicInstance.setParameterByName("YPITSClick", 1);
+                musicInstance.setParameterByName("YPITSVinylCrash", 1);
+                musicInstance.setParameterByName("YPITSWorkPerc", 1);
+                break;
+            default:
+                Debug.LogWarning("Unknown song selected");
+                break;
+        }
+        musicInstance.start();
     }
     void Update()
     {
@@ -207,26 +266,44 @@ public class ScoreKeeper : MonoBehaviour
     }
     private void MusicControl()
     {
-        if(currentTurn < 0)
+        switch(songSelector)
         {
-            musicInstance.setParameterByName("TFYABBassline", 0);
-            musicInstance.setParameterByName("TFYABEpiano", 1);
-        }
-        if(currentTurn > 0)
-        {
-            if(turnStep == 0)
-            {
-                musicInstance.setParameterByName("TFYABBassline", 1);
-                musicInstance.setParameterByName("TFYABFunkyBassline", 0);
-                musicInstance.setParameterByName("TFYABKick", 1);
-                musicInstance.setParameterByName("TFYABShaker", 0);
-            }
-            else if(turnStep == 1)
-            {
-                musicInstance.setParameterByName("TFYABBassline", 0);
-                musicInstance.setParameterByName("TFYABFunkyBassline", 1);
-                musicInstance.setParameterByName("TFYABShaker", 1);
-            }
+            case Song.TFYAB:
+                if (currentTurn > 0)
+                {
+                    if (turnStep == 0)//Bassline ON, FunkyBasline OFF, Shaker OFF
+                    {
+                        StartCoroutine(LerpParameter("TFYABBassline", basslineValue, 1, 2));
+                        StartCoroutine(LerpParameter("TFYABFunkyBassline", funkyBasslineValue, 0, 2));
+                        StartCoroutine(LerpParameter("TFYABShaker", shakerValue, 0, 2));
+                    }
+                    else if (turnStep == 1)//Bassline OFF, FunkyBasline ON, Shaker ON
+                    {
+                        StartCoroutine(LerpParameter("TFYABBassline", basslineValue, 0, 2));
+                        StartCoroutine(LerpParameter("TFYABFunkyBassline", funkyBasslineValue, 1, 2));
+                        StartCoroutine(LerpParameter("TFYABShaker", shakerValue, 1, 2));
+                    }
+                }
+                break;
+            case Song.YPITS:
+                if(currentTurn > 0)
+                {
+                    if(turnStep == 0)//VinylHorns ON, FireLead OFF, Snare OFF
+                    {
+                        StartCoroutine(LerpParameter("YPITSVinylHorns", YPITSVinylHornsValue, 1, 2));
+                        StartCoroutine(LerpParameter("YPITSFireLead", YPITSFireLeadValue, 0, 2));
+                        StartCoroutine(LerpParameter("YPITSSnare", YPITSSnareValue, 0, 2));
+                    }
+                    else if(turnStep == 1)//FireLead ON, Snare ON
+                    {
+                        StartCoroutine(LerpParameter("YPITSFireLead", YPITSFireLeadValue, 1, 2));
+                        StartCoroutine(LerpParameter("YPITSSnare", YPITSSnareValue, 1, 2));
+                    }
+                }
+                break;
+            default:
+                Debug.LogWarning("Unknown song selected");
+                break;
         }
     }
     public void SwitchTurns()
@@ -337,7 +414,7 @@ public class ScoreKeeper : MonoBehaviour
         }
         snowInstance.setPaused(!isSnowing);
         Color targetColor = isSnowing ? semiOpaque : transparent;
-        snowOverlay.color = Color.Lerp(snowOverlay.color, targetColor, Time.deltaTime * 1f);
+        snowOverlay.color = Color.Lerp(snowOverlay.color, targetColor, Time.deltaTime * 1);
         
         var em = snowPS.emission;
         em.enabled = isSnowing;
@@ -383,12 +460,23 @@ public class ScoreKeeper : MonoBehaviour
     {
         StartCoroutine(KickTableAnim());
     }
+    public void StealRandomCard(bool AorB)
+    {
+        if(AorB)//A is stealing from B
+        {
+            Debug.Log("Steal random card from player B");
+        }
+        else//B is stealing from A
+        {
+            Debug.Log("Steal random card from player A");
+        }
+    }
     private IEnumerator ShowDude()
     {
         dudeObject.SetActive(true);
         float duration = 0.1f;
-        float waitTime = 1f;
-        float elapsedTime = 0f;
+        float waitTime = 1;
+        float elapsedTime = 0;
         Vector3 startPosition = dudeObject.transform.position;
         Quaternion startRotation = dudeObject.transform.rotation;
 
@@ -404,7 +492,7 @@ public class ScoreKeeper : MonoBehaviour
         showDudeInstance.start();
 
         yield return new WaitForSeconds(waitTime);
-        elapsedTime = 0f;
+        elapsedTime = 0;
         startPosition = dudeObject.transform.position;
         startRotation = dudeObject.transform.rotation;
 
@@ -444,5 +532,17 @@ public class ScoreKeeper : MonoBehaviour
         //return camera and dust
         dustPSMain.maxParticles = (int)Mathf.Lerp(0, dustMaxParticles, Time.deltaTime * 25f);
         cameraAnimator.SetBool("KickTable", false);
+    }
+    private IEnumerator LerpParameter(string parameterName, float fromValue, float toValue, float speed)
+    {
+        float elapsedTime = 0;
+        while (elapsedTime < 50f)
+        {
+            elapsedTime += Time.deltaTime * speed;
+            float newValue = Mathf.Lerp(fromValue, toValue, elapsedTime / 50f);
+            musicInstance.setParameterByName(parameterName, newValue);
+            yield return null;
+        }
+        musicInstance.setParameterByName(parameterName, toValue);
     }
 }
