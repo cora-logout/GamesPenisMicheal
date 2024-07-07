@@ -40,11 +40,16 @@ public class EffectLibrary : MonoBehaviour
 
         effectDictionary = new Dictionary<string, Effect>
         {
+            { "ChuvaDef", new Effect { type = EffectType.ChuvaDef } },
             { "Dude", new Effect { type = EffectType.Dude, effectValue = 0 } },
+            { "Fly", new Effect { type = EffectType.Fly } },
             { "HealI", new Effect { type = EffectType.Heal, effectValue = 10 } },
             { "HealII", new Effect { type = EffectType.Heal, effectValue = 15 } },
             { "HealIII", new Effect { type = EffectType.Heal, effectValue = 20 } },
             { "Hide", new Effect { type = EffectType.Hide, chance = 0.5f } },
+            { "IncreaseAim", new Effect { type = EffectType.IncreaseAim } },
+            { "IncreaseSnowChance", new Effect { type = EffectType.IncreaseSnowChance } },
+            { "KickTable", new Effect { type = EffectType.KickTable } },
             { "Lock", new Effect { type = EffectType.Lock, effectValue = 1 } },
             { "PoisonI", new Effect { type = EffectType.Poison, effectValue = 10, duration = 1 } },
             { "PoisonII", new Effect { type = EffectType.Poison, effectValue = 15, duration = 1 } },
@@ -53,9 +58,7 @@ public class EffectLibrary : MonoBehaviour
             { "ScareI", new Effect { type = EffectType.Scare, effectValue = 10, duration = 1 } },
             { "ScareII", new Effect { type = EffectType.Scare, effectValue = 10, duration = 2, subsequentValue = 5 } },
             { "ScareIII", new Effect { type = EffectType.Scare, effectValue = 15, duration = 1, subsequentValue = 10 } },
-            { "IncreaseSnowChance", new Effect { type = EffectType.IncreaseSnowChance } },
-            { "ChuvaDef", new Effect { type = EffectType.ChuvaDef } },
-            { "KickTable", new Effect { type = EffectType.KickTable } }
+            { "VisionLoss", new Effect { type = EffectType.VisionLoss } }
         };
     }
     void Start()
@@ -113,6 +116,9 @@ public class EffectLibrary : MonoBehaviour
                         Debug.Log("Scared: Enemy attack reduced by " + effect.effectValue + " for " + effect.duration + " turn(s)");
                     }
                     break;
+                case EffectType.IncreaseAim:
+                    Debug.Log("Increase aim for active character");
+                    break;
                 case EffectType.IncreaseSnowChance:
                     Debug.Log("Increased snow chance");
                     scoreKeeper.snowChance = scoreKeeper.snowChance -1;
@@ -160,6 +166,7 @@ public enum EffectType
     Poison,
     Relax,
     Scare,
+    IncreaseAim,
     IncreaseSnowChance,
     ChuvaDef,
     KickTable,

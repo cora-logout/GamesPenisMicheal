@@ -49,24 +49,16 @@ public class CardLibrary : MonoBehaviour
         }
         cardCharacterDictionary = new Dictionary<string, CardP>
         {
-            { "Testonildo", //Name of character
-                new CardP("Testonildo", //Name of card
-                new Dictionary<string, Skill> { //Dictionary for Skills
-                    { "Golpe 1", new Skill(10, 1, "Default") }, //Skill name, Damage and Cost
-                    { "Golpe 2", new Skill(20, 2, "Default") },
-                    { "Golpe 3", new Skill(30, 3, "Default") }
-                }) 
-            },
-            { "Bufos Regularis",
-                new CardP("Bufos Regularis",
+            { "Bufos Regularis",//Key
+                new CardP("Bufos Regularis", @"Images/Personagens/bufos regularis", 20,//Name of card, path to card Image, card health
                 new Dictionary<string, Skill> {
-                    { "Ribbit", new Skill(15, 1, "Default") }, 
+                    { "Ribbit", new Skill(15, 1, "Default") },//Skill name, Damage, Cost, Type
                     { "Salto", new Skill(10, 2, "Default") },
                     { "Bufada", new Skill(20, 3, "Default") }
-                }) 
+                })
             },
             { "Billy Feijão do Mal", 
-                new CardP("Billy Feijão do Mal",
+                new CardP("Billy Feijão do Mal", @"Images/Personagens/billy feijão do mal", 15,
                 new Dictionary<string, Skill> {
                     { "Mordida", new Skill(10, 2, "Default") },
                     { "Golpe Terroso", new Skill(5, 1, "Default") },
@@ -74,7 +66,7 @@ public class CardLibrary : MonoBehaviour
                 })
             },
             { "Cachilda", 
-                new CardP("Cachilda",
+                new CardP("Cachilda", @"Images/Personagens/cachilda", 15,
                 new Dictionary<string, Skill> {
                     { "Mordida", new Skill(10, 1, "Default") },
                     { "Latir", new Skill(0, 1, "ScareI") },
@@ -82,7 +74,7 @@ public class CardLibrary : MonoBehaviour
                 })
             },
             { "Chapéu Fumante", 
-                new CardP("Chapéu Fumante",
+                new CardP("Chapéu Fumante", @"Images/Personagens/chapéu fumante", 20,
                 new Dictionary<string, Skill> {
                     { "Bomba de Fumaça", new Skill(15, 3, "Hide") },
                     { "Soco Simples", new Skill(10, 1, "Default") },
@@ -90,7 +82,7 @@ public class CardLibrary : MonoBehaviour
                 })
             },
             { "Doutor Afanasfávio",
-                new CardP("Doutor Afanasfávio",
+                new CardP("Doutor Afanasfávio", @"Images/Personagens/doutor afanasfávio", 20,
                 new Dictionary<string, Skill> {
                     { "Pílulas Mágicas", new Skill(0, 2, "HealI") },
                     { "Análise", new Skill(15, 2, "Dude") },
@@ -98,15 +90,15 @@ public class CardLibrary : MonoBehaviour
                 })
             },
             { "Fantasma", 
-                new CardP("Fantasma", 
+                new CardP("Fantasma", @"Images/Personagens/fantasma", 15,
                 new Dictionary<string, Skill> { 
                     { "Golpe Ectoplásmico", new Skill(10, 1, "Default") }, 
                     { "Grito do Abismo", new Skill(5, 1, "Default") },
                     { "Desaparecer", new Skill(0, 2, "Hide") } 
-                }) 
+                })
             },
             { "João Bobão cara de Melão",
-                new CardP("João Bobão cara de Melão",
+                new CardP("João Bobão cara de Melão", @"Images/Personagens/João Bobão cara de Melão", 25,
                 new Dictionary<string, Skill> {
                     { "Soco Simples", new Skill(10, 1, "Default") },
                     { "Uhhh", new Skill(30, 3, "Default") },
@@ -114,15 +106,15 @@ public class CardLibrary : MonoBehaviour
                 })
             },
             { "Kary 233",
-                new CardP("Kary 233",
+                new CardP("Kary 233", @"Images/Personagens/Kary 233", 25,
                 new Dictionary<string, Skill> {
                     { "Ataque Cibernético", new Skill(5, 1, "Hack") },
-                    { "Ataque 2", new Skill(10, 1, "Default") },
+                    { "Ataque 2", new Skill(10, 2, "Default") },
                     { "Ataque 3", new Skill(10, 1, "Default") }
                 })
             },
             { "Passarinho",
-                new CardP("Passarinho", 
+                new CardP("Passarinho", @"Images/Personagens/passarinho", 15,
                 new Dictionary<string, Skill> {
                     { "Bicada", new Skill(10, 1, "Default") },
                     { "Voar", new Skill(0, 2, "Fly") },
@@ -132,15 +124,57 @@ public class CardLibrary : MonoBehaviour
         };
         cardDefenseDictionary = new Dictionary<string, CardD>
         {
-            { "Caixa de Som", new CardD("Caixa de Som", 10, "Default") },
-            { "Casaco de Frio", new CardD("Casaco de Frio", 15, "IncreaseSnowChance") },
-            { "Guarda Chuva", new CardD("Guarda Chuva", 15, "ChuvaDef") },
-            { "Pistola Globeriana V30", new CardD("Pistola Globeriana V30", 10, "Default") }
+            { "Caixa de Som",//key
+                new CardD("Caixa de Som",//card name
+                @"Images/Defesas/caixa de som",//path to image
+                10,//health
+                "Default")//type
+            },
+            { "Casaco de Frio", 
+                new CardD("Casaco de Frio", 
+                @"Images/Defesas/casaco de frio", 
+                15, 
+                "IncreaseSnowChance") 
+            },
+            { "Guarda Chuva", 
+                new CardD("Guarda Chuva", 
+                @"Images/Defesas/guarda-chuva", 
+                15, 
+                "ChuvaDef") 
+            },
+            { "Pistola Globeriana V30", 
+                new CardD("Pistola Globeriana V30", 
+                @"Images/Defesas/pistola globeriana V30", 
+                10, 
+                "Default") 
+            }
         };
         cardMagicDictionary = new Dictionary<string, CardM>
         {
-            { "Pote de Picles", new CardM("Pote de Picles", 0, "Lock", 1) },
-            { "Abdução de Cartas", new CardM("Abdução de Cartas", 0, "StealRandomCard", 0)}
+            { "Pote de Picles",//key
+                new CardM("Pote de Picles",//card name
+                @"Images/Magias/pote de picles",//path to image
+                0,//cost
+                "Prende o inimigo num pote de picles",//description
+                "Lock",//effect 1 
+                1)//fx1 force
+            },
+            { "Abdução de Cartas", 
+                new CardM("Abdução de Cartas", 
+                @"Images/Magias/abdução de cartas", 
+                2, 
+                "Rouba duas cartas do inimigo", 
+                "StealRandomCard", 
+                0) 
+            },
+            { "Alvo", 
+                new CardM("Alvo", 
+                @"Images/Magias/alvo", 
+                0, 
+                "Um bom alvo para praticar. Aumenta chance de ataques críticos para o personagem ativo em 50%", 
+                "IncreaseAim", 
+                0) 
+            }
         };
     }
     void Start()
@@ -200,11 +234,15 @@ public class CardLibrary : MonoBehaviour
 public class CardP
 {
     public string Name { get; set; }
+    public string PathToImageP { get; set; }
+    public int Health { get; set; }
     public Dictionary<string, Skill> Skills;
 
-    public CardP(string name, Dictionary<string, Skill> skills)
+    public CardP(string name, string imagePathP, int health, Dictionary<string, Skill> skills)
     {
         Name = name;
+        PathToImageP = imagePathP;
+        Health = health;
         Skills = skills;
     }
 }
@@ -224,12 +262,14 @@ public class Skill
 public class CardD
 {
     public string Name { get; set; }
+    public string PathToImageD { get; set; }
     public int Health { get; set; }
     public string Effect { get; set; }
 
-    public CardD(string name, int health, string effect)
+    public CardD(string name, string imagePathD, int health, string effect)
     {
         Name = name;
+        PathToImageD = imagePathD;
         Health = health;
         Effect = effect;
     }
@@ -237,14 +277,18 @@ public class CardD
 public class CardM
 {
     public string Name { get; set; }//Name of card
-    public int Damage { get; set; }//Damage cards deals (Optional)
+    public string PathToImageM { get; set; }
+    public int Cost { get; set; }//Cost of activation
+    public string Description { get; set; }//Description of card
     public string Effect1 { get; set; }//Effect card gives (Optional)
     public int Fx1Force { get; set; }//Force of Effect 1, if any
 
-    public CardM(string name, int damage, string effect1, int fx1force)
+    public CardM(string name, string imagePathM, int cost, string description, string effect1, int fx1force)
     {
         Name = name;
-        Damage = damage;
+        PathToImageM = imagePathM;
+        Cost = cost;
+        Description = description;
         Effect1 = effect1;
         Fx1Force = fx1force;
     }

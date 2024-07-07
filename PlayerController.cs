@@ -51,7 +51,7 @@ public class PlayerController : MonoBehaviour
     private float fastSmoothSpeed = 20f;
     public bool canBuy = true;
     [SerializeField] private List<GameObject> cardsInHand;
-    [SerializeField] private List<GameObject> cardDeck;
+    [SerializeField] private List<GameObject> cards;
     [SerializeField] private List<GameObject> coins;
     [SerializeField] private Transform cardSpawnPoint;
     [SerializeField] private Transform coinSpawnPoint;
@@ -61,7 +61,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Color pauseColor;
     [SerializeField] private Color transparent;
     [SerializeField] private Color red;
-    [SerializeField] private Color white;
+    private Color white;
     [SerializeField] private Color coinYellow;
     [SerializeField] private GameObject pauseObject;
     [SerializeField] private Image pauseOverlay;
@@ -72,12 +72,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject returnFromWalletButton;
     [SerializeField] private GameObject enterWalletButton;
     [SerializeField] private GameObject fadeToBlack;
-    public Dictionary<string, bool> slotStates = new Dictionary<string, bool>
-    {
-        { "SlotPersonagem", false },
-        { "SlotDefesa", false },
-        { "SlotMagia", false }
-    };
+    private bool slotPIsFull = false;
+    private bool slotDIsFull = false;
+    private bool slotMIsFull = false;
 
     //FMOD
     private string CardPickUpSound = "event:/CardPickUp";
@@ -122,6 +119,8 @@ public class PlayerController : MonoBehaviour
         closeGameInstance = RuntimeManager.CreateInstance(CloseGameSound);
         pauseInstance = RuntimeManager.CreateInstance(PauseSound);
         getCoinsInstance = RuntimeManager.CreateInstance(GetCoinsSound);
+
+        white = new Color(1, 1, 1, 1);
     }
     void Update()
     {
@@ -300,38 +299,45 @@ public class PlayerController : MonoBehaviour
         Collider[] hitColliders = Physics.OverlapBox(selectedRigidbody.position, selectedRigidbody.transform.localScale / 2);
         foreach (var hitCollider in hitColliders)
         {
-            string slotTag = hitCollider.tag;
-            string cardTag = selectedRigidbody.tag;
-            Debug.Log(slotTag);
-
-            if (slotStates.ContainsKey(slotTag) && !slotStates[slotTag] && slotTag.Replace("Slot", "") == cardTag)
+            if(hitCollider.tag != "Untagged")
             {
-                Vector3 slotPosition = hitCollider.transform.position;
-                selectedRigidbody.position = new Vector3(slotPosition.x, selectedRigidbody.position.y, slotPosition.z);
-                slotStates[slotTag] = true;
-                filledSlotInstance.start();
-                SoundEffects soundEffects = FindObjectOfType<SoundEffects>();
-                soundEffects.PlayCardSound(selectedRigidbody.name.Replace("(Clone)", "").Trim() + "Activate");
+                string slotTag = hitCollider.tag;
+                string cardTag = selectedRigidbody.tag;
+                if(slotTag.Replace("Slot", "") == cardTag)//check if slot tag == card tag so we snap to the correct slot
+                {
+                    Vector3 slotPosition = hitCollider.transform.position;
+                    filledSlotInstance.start();
+                    SoundEffects soundEffects = FindObjectOfType<SoundEffects>();
+                    soundEffects.PlayCardSound(selectedRigidbody.name.Replace("(Clone)", "").Trim() + "Activate");
 
-                if(cardTag == "Personagem")
-                {
-                    scoreKeeperScript.playerAHasCharacter = true;
-                    CardPersonagem cardPScript = selectedRigidbody.GetComponent<CardPersonagem>();
-                    cardPScript.canBeMovedP = false;
-                    cardPScript.cardIsActive = true;
+                    if(cardTag == "Personagem" && !slotPIsFull)
+                    {
+                        selectedRigidbody.position = new Vector3(slotPosition.x, selectedRigidbody.position.y, slotPosition.z);
+                        scoreKeeperScript.playerAHasCharacter = true;
+                        CardPersonagem cardPScript = selectedRigidbody.GetComponent<CardPersonagem>();
+                        cardPScript.canBeMovedP = false;
+                        cardPScript.cardIsActiveP = true;
+                        slotPIsFull = true;
+                    }
+                    if(cardTag == "Defesa" && !slotDIsFull)
+                    {
+                        selectedRigidbody.position = new Vector3(slotPosition.x, selectedRigidbody.position.y, slotPosition.z);
+                        scoreKeeperScript.playerAHasDefense = true;
+                        CardDefesa cardDScript = selectedRigidbody.GetComponent<CardDefesa>();
+                        cardDScript.canBeMovedD = false;
+                        cardDScript.cardIsActiveD = true;
+                        slotDIsFull = true;
+                    }
+                    if(cardTag == "Magia" && !slotMIsFull)
+                    {
+                        selectedRigidbody.position = new Vector3(slotPosition.x, selectedRigidbody.position.y, slotPosition.z);
+                        CardMagia cardMScript = selectedRigidbody.GetComponent<CardMagia>();
+                        cardMScript.canBeMovedM = false;
+                        cardMScript.cardIsActiveM = true;
+                        slotMIsFull = true;
+                    }
+                    break;
                 }
-                if(cardTag == "Defesa")
-                {
-                    scoreKeeperScript.playerAHasDefense = true;
-                    CardDefesa cardDScript = selectedRigidbody.GetComponent<CardDefesa>();
-                    cardDScript.canBeMovedD = false;
-                }
-                if(cardTag == "Magia")
-                {
-                    CardMagia cardMScript = selectedRigidbody.GetComponent<CardMagia>();
-                    cardMScript.canBeMovedM = false;
-                }
-                break;
             }
         }
     }
@@ -370,13 +376,26 @@ public class PlayerController : MonoBehaviour
         Collider[] hitColliders = Physics.OverlapBox(selectedRigidbody.position, selectedRigidbody.transform.localScale / 2);
         foreach (var hitCollider in hitColliders)
         {
-            string slotTag = hitCollider.tag;
-            string cardTag = selectedRigidbody.tag;
-
-            if (slotStates.ContainsKey(slotTag) && slotTag.Replace("Slot", "") == cardTag)
+            if(hitCollider.tag != "Untagged")
             {
-                slotStates[slotTag] = false;
-                break;
+                string slotTag = hitCollider.tag;
+                string cardTag = selectedRigidbody.tag;
+
+                if(slotTag.Replace("Slot", "") == cardTag)
+                {
+                    if(cardTag == "Personagem" && slotPIsFull)
+                    {
+                        slotPIsFull = false;
+                    }
+                    if(cardTag == "Defesa" && slotDIsFull)
+                    {
+                        slotDIsFull = false;
+                    }
+                    if(cardTag == "Magia" && slotMIsFull)
+                    {
+                        slotMIsFull = false;
+                    }
+                }
             }
         }
     }
@@ -455,7 +474,7 @@ public class PlayerController : MonoBehaviour
             if (Physics.Raycast(ray, out hit) && hit.collider.CompareTag("Deck"))
             {
                 buyCardInstance.start();
-                InstantiateRandomCard();
+                GetCard();
                 scoreKeeperScript.turnStep = 1;
                 canBuy = false;
             }
@@ -477,31 +496,26 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-    private void InstantiateRandomCard()
+    private void GetCard()
     {
-        if (cardDeck.Count > 0 && canBuy)
+        int randomIndex = Random.Range(0, cards.Count);
+        GameObject newCard = Instantiate(cards[randomIndex], cardSpawnPoint.position, Quaternion.Euler(0, -180, 0));
+
+        CardPersonagem cardPersonagem = newCard.GetComponent<CardPersonagem>();
+        CardMagia cardMagia = newCard.GetComponent<CardMagia>();
+        CardDefesa cardDefesa = newCard.GetComponent<CardDefesa>();
+
+        if (cardPersonagem != null)
         {
-            int randomIndex = Random.Range(0, cardDeck.Count);
-            GameObject newCard = Instantiate(cardDeck[randomIndex], cardSpawnPoint.position, Quaternion.Euler(0, -180, 0));
-
-            cardDeck.RemoveAt(randomIndex);
-
-            CardPersonagem cardPersonagem = newCard.GetComponent<CardPersonagem>();
-            CardMagia cardMagia = newCard.GetComponent<CardMagia>();
-            CardDefesa cardDefesa = newCard.GetComponent<CardDefesa>();
-
-            if (cardPersonagem != null)
-            {
-                cardPersonagem.canBeMovedP = true;
-            }
-            else if (cardMagia != null)
-            {
-                cardMagia.canBeMovedM = true;
-            }
-            else if (cardDefesa != null)
-            {
-                cardDefesa.canBeMovedD = true;
-            }
+            cardPersonagem.canBeMovedP = true;
+        }
+        else if (cardMagia != null)
+        {
+            cardMagia.canBeMovedM = true;
+        }
+        else if (cardDefesa != null)
+        {
+            cardDefesa.canBeMovedD = true;
         }
     }
     private void InstantiateCoin()

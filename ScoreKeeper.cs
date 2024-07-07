@@ -75,7 +75,8 @@ public class ScoreKeeper : MonoBehaviour
     {
         WoodRoom,
         TechRoom,
-        WeirdRoom
+        WeirdRoom,
+        NatureRoom
     }
     [SerializeField] private Song songSelector;
     [SerializeField] private Room roomSelector;
@@ -101,6 +102,7 @@ public class ScoreKeeper : MonoBehaviour
     [SerializeField] private GameObject woodRoom;
     [SerializeField] private GameObject techRoom;
     [SerializeField] private GameObject weirdRoom;
+    [SerializeField] private GameObject natureRoom;
     private Vector3 roomSpawnPos = new Vector3(83.1f, 65.3914f, 128.8959f);
 
     public PlayerController playerAController;
@@ -128,7 +130,7 @@ public class ScoreKeeper : MonoBehaviour
     }
     private void Awake()
     {
-        if (_instance != null && _instance != this)
+        if (_instance != null && _instance != this)//makes sure we only have one ScoreKeeper in scene
         {
             Destroy(gameObject);
         }
@@ -148,7 +150,8 @@ public class ScoreKeeper : MonoBehaviour
             case Room.WeirdRoom:
                 Instantiate(weirdRoom, roomSpawnPos, transform.rotation);
                 break;
-            default: 
+            case Room.NatureRoom:
+                Instantiate(natureRoom, roomSpawnPos, transform.rotation);
                 break;
         }
     }
@@ -288,7 +291,7 @@ public class ScoreKeeper : MonoBehaviour
                 {
                     if(turnStep == 0)//VinylHorns ON, FireLead OFF, Snare OFF
                     {
-                        StartCoroutine(LerpParameter("YPITSVinylHorns", YPITSVinylHornsValue, 1, 2));
+                        StartCoroutine(LerpParameter("YPITSVinylHorns", YPITSVinylHornsValue, 1, 3));
                         StartCoroutine(LerpParameter("YPITSFireLead", YPITSFireLeadValue, 0, 2));
                         StartCoroutine(LerpParameter("YPITSSnare", YPITSSnareValue, 0, 2));
                     }

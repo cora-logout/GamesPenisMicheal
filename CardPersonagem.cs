@@ -7,31 +7,30 @@ using System.Text.RegularExpressions;
 public class CardPersonagem : MonoBehaviour
 {
     private Dictionary<string, int> skillTagToNumber;
-    public int health = 30;
+    private int health = 20;
     public Text healthText;
-    public string cardName = "Default";
+    private string cardName;
     public Text nameText;
-    public string skill1Description = "Descrição detalhada sobre como funciona essa habilidade.";
+    private string skill1Description;
     public Text skill1DescriptionText;
-    public string skill2Description = "Default";
+    private string skill2Description;
     public Text skill2DescriptionText;
-    public string skill3Description = "Default";
+    private string skill3Description;
     public Text skill3DescriptionText;
-    public int skill1Cost = 0;
+    private int skill1Cost = 0;
     public Text skill1CostText;
-    public int skill2Cost = 0;
+    private int skill2Cost = 0;
     public Text skill2CostText;
-    public int skill3Cost = 0;
+    private int skill3Cost = 0;
     public Text skill3CostText;
     public bool canBeMovedP = false;
     public bool cardBelongsToA = false;
     public bool cardIsInHandP = false;
-    public bool cardIsActive = false;
+    public bool cardIsActiveP = false;
     [SerializeField] private GameObject skillButtons;
-    [SerializeField] private GameObject outline;
-    [SerializeField] private Animator imageAnimator;
-    private Material material;
+    [SerializeField] private Renderer outlineRenderer;
     private Color originalOutlineColor;
+    [SerializeField] private Renderer imageRenderer;
     private float defaultOutlineOpacity = 0f;
     private float hoverOutlineOpacity = 1f;
     private bool isHovering = false;
@@ -66,21 +65,20 @@ public class CardPersonagem : MonoBehaviour
             { "Skill2", 2 },
             { "Skill3", 3 }
         };
-
-        Renderer renderer = outline.GetComponent<Renderer>();
-        material = renderer.material;
-        originalOutlineColor = material.color;
+        
+        originalOutlineColor = outlineRenderer.material.color;
         SetOpacity(defaultOutlineOpacity);
+        ChooseRandomCard();
     }
     void Update()
     {
         UpdateTexts();
-        if(cardIsActive && scoreKeeper.playerACanAttack)
+        if(cardIsActiveP && scoreKeeper.playerACanAttack)
         {
             DetectSkillClicks();
         }
         cardCollider.enabled = canBeMovedP;
-        if(cardIsActive)
+        if(cardIsActiveP)
         {
             StartCoroutine(MakeCardKinematic());
         }
@@ -92,7 +90,6 @@ public class CardPersonagem : MonoBehaviour
         {
             SetOpacity(defaultOutlineOpacity);
         }
-        imageAnimator.SetBool("IsActive", cardIsActive);
         HealthControl();
     }
     private void OnMouseEnter()
@@ -107,10 +104,11 @@ public class CardPersonagem : MonoBehaviour
     {
         Color color = originalOutlineColor;
         color.a = opacity;
-        material.color = color;
+        outlineRenderer.material.color = color;
     }
     private void UpdateTexts()
     {
+        this.gameObject.name = cardName;
         nameText.text = cardName;
         healthText.text = health.ToString();
         skill1DescriptionText.text = skill1Description;
@@ -122,7 +120,7 @@ public class CardPersonagem : MonoBehaviour
     }
     private void DetectSkillClicks()
     {
-        skillButtons.SetActive(cardIsActive);
+        skillButtons.SetActive(cardIsActiveP);
 
         if (Input.GetMouseButtonUp(0))
         {
@@ -131,10 +129,10 @@ public class CardPersonagem : MonoBehaviour
             if (Physics.Raycast(ray, out hit) && hit.collider.gameObject.layer == LayerMask.NameToLayer("SkillButton"))
             {
                 SkillButton skillButton = hit.collider.GetComponent<SkillButton>();
-                if (skillButton != null && cardName == skillButton.cardName)
+                if (skillButton != null && cardName == skillButton.cardName && skillButton.isActive)
                 {
                     cardLibrary.CardPSkill(skillButton.cardName, skillButton.skillNumber - 1);
-                    skillButton.currentCoolDown = skillButton.coolDown;
+                    skillButton.SetCooldown();//set current cooldown to the cooldown value for that skill
                     skillButton.Cooldown();
                 }
             }
@@ -160,7 +158,6 @@ public class CardPersonagem : MonoBehaviour
         if (Physics.Raycast(ray, out hit))
         {
             Transform hitTransform = hit.collider.transform;
-
             if (hitTransform == transform)
             {
                 isHovering = true;
@@ -177,14 +174,54 @@ public class CardPersonagem : MonoBehaviour
 
         if (isHovering)
         {
-            float targetOpacity = Mathf.Lerp(material.color.a, hoverOutlineOpacity, Time.deltaTime * mediumSmoothSpeed);
+            float targetOpacity = Mathf.Lerp(outlineRenderer.material.color.a, hoverOutlineOpacity, Time.deltaTime * mediumSmoothSpeed);
             SetOpacity(targetOpacity);
         }
         else
         {
-            float targetOpacity = Mathf.Lerp(material.color.a, defaultOutlineOpacity, Time.deltaTime * mediumSmoothSpeed);
+            float targetOpacity = Mathf.Lerp(outlineRenderer.material.color.a, defaultOutlineOpacity, Time.deltaTime * mediumSmoothSpeed);
             SetOpacity(targetOpacity);
         }
+    }
+    private void ChooseRandomCard()
+    {
+        //get all the keys from the dictionary
+        Dictionary<string, CardP> cardCharacterDictionary = cardLibrary.cardCharacterDictionary;
+        List<string> characterNames = new List<string>(cardCharacterDictionary.Keys);
+
+        //select a random index
+        int randomIndex = Random.Range(0, characterNames.Count);
+        
+        //get the random character name
+        cardName = characterNames[randomIndex];
+        CardP card = cardCharacterDictionary[cardName];
+        health = card.Health;
+        int skillIndex = 0;
+        foreach (var skills in card.Skills)//go trough each skill and set their costs and descriptions
+        {
+            if (skillIndex == 0) 
+            {
+                skill1Cost = skills.Value.Cost;
+            }
+            else if (skillIndex == 1) 
+            {
+                skill2Cost = skills.Value.Cost;
+            }
+            else if (skillIndex == 2) 
+            {
+                skill3Cost = skills.Value.Cost;
+            }
+            skillIndex++;
+        }
+        string targetImagePath = card.PathToImageP;//get image path
+        if (!string.IsNullOrEmpty(targetImagePath))//string != null
+        {
+            if (targetImagePath != null)
+            {
+                imageRenderer.material.mainTexture = Resources.Load<Texture>(targetImagePath);
+            }
+        }
+        cardCharacterDictionary.Remove(cardName);//remove card from dictionary
     }
     private IEnumerator MakeCardKinematic()
     {
